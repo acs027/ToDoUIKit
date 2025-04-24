@@ -7,11 +7,12 @@
 
 import UIKit
 
-class HomePage: UIViewController {
+class Homepage: UIViewController {
     
     @IBOutlet weak var todoTableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
     var todoList = [ToDo]()
+    var homepageViewModel = HomepageViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,26 +31,19 @@ class HomePage: UIViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.tintColor = .mainText
         
-        let t1 = ToDo(title: "ToDo1", description: "ToDo1")
-        let t2 = ToDo(title: "ToDo2", description: "ToDo2")
-        let t3 = ToDo(title: "ToDo3", description: "ToDo3")
-        todoList += [t1, t2, t3]
+        
+        _ = homepageViewModel.todos.subscribe(onNext: { list in
+            self.todoList = list
+            self.todoTableView.reloadData()
+        })
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        todoTableView.reloadData()
+        homepageViewModel.loadTodos()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let createVC = segue.destination as? CreateScreen {
-            createVC.onSave = { [weak self] newToDo in
-                self?.todoList.append(newToDo)
-                self?.todoTableView.reloadData()
-                // You can also reload a tableView here if needed
-            }
-        }
-        
         if segue.identifier == "toDetail" {
             print("toDetail run")
             if let todo = sender as? ToDo {
@@ -60,13 +54,13 @@ class HomePage: UIViewController {
     }
 }
 
-extension HomePage: UISearchBarDelegate {
+extension Homepage: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        print("Searching")
+        homepageViewModel.search(for: searchText)
     }
 }
 
-extension HomePage: UITableViewDelegate, UITableViewDataSource {
+extension Homepage: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         todoList.count
     }
@@ -81,6 +75,25 @@ extension HomePage: UITableViewDelegate, UITableViewDataSource {
         let todo = todoList[indexPath.row]
         performSegue(withIdentifier: "toDetail", sender: todo)
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") {
+            contextualAction, view, bool in
+            let todo = self.todoList[indexPath.row]
+            
+            let alert = UIAlertController(title: "Delete Action", message: "Dou you want to delete \(todo.title!)?", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+            alert.addAction(cancelAction)
+            let confirmAction = UIAlertAction(title: "Confirm", style: .destructive) { action in
+                self.homepageViewModel.delete(id: todo.id!)
+            }
+            alert.addAction(confirmAction)
+            
+            self.present(alert, animated: true)
+            
+        }
+        return UISwipeActionsConfiguration(actions: [deleteAction])
     }
     
     

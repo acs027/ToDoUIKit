@@ -8,11 +8,12 @@
 import Foundation
 
 class ToDo {
-    let id: UUID = UUID()
-    var title: String
-    var description: String
+    var id: Int?
+    var title: String?
+    var description: String?
     
-    init(title: String, description: String) {
+    init(id: Int, title: String, description: String) {
+        self.id = id
         self.title = title
         self.description = description
     }

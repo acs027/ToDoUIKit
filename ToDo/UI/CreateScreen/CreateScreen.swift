@@ -11,7 +11,7 @@ class CreateScreen: UIViewController {
 
     @IBOutlet weak var descriptionTextView: UITextView!
     @IBOutlet weak var titleTextField: UITextField!
-    var onSave: ((ToDo) -> Void)?
+    var createScreenViewModel = CreateScreenViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,8 +39,7 @@ class CreateScreen: UIViewController {
     private func save() {
         if let title = titleTextField.text,
            let description = descriptionTextView.text {
-            let todo = ToDo(title: title, description: description)
-            onSave?(todo) // Call the closure to pass data back
+            createScreenViewModel.save(title: title, description: description)
             navigationController?.popViewController(animated: true)
         }
     }

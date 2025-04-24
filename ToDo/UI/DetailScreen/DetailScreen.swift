@@ -12,6 +12,7 @@ class DetailScreen: UIViewController {
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var descriptionTextView: UITextView!
     var todo: ToDo?
+    var detailScreenViewModel = DetailScreenViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,9 +41,9 @@ class DetailScreen: UIViewController {
     
     private func save() {
         if let title = titleTextField.text,
-           let description = descriptionTextView.text {
-            todo?.title = title
-            todo?.description = description
+           let description = descriptionTextView.text,
+            let todo = todo {
+            detailScreenViewModel.update(id: todo.id!, title: title, description: description)
             navigationController?.popViewController(animated: true)
         }
     }
